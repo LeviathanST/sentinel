@@ -1,5 +1,5 @@
 {
-  description: "Project Sentinel: The First-Principles Life Advisor";
+  description = "Project Sentinel: The First-Principles Life Advisor";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
