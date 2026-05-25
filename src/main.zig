@@ -1,12 +1,32 @@
 const std = @import("std");
 
+const MAX_BIOLOGICAL_RAM = 10;
+
 const Context = struct {
     name: []const u8,
     complexity: u8,
 };
 
+const ContextList = struct {
+    list: std.ArrayList(Context) = .empty,
+    total_complexity: u8 = 0,
+
+    pub fn deinit(self: *ContextList, alloc: std.mem.Allocator) void {
+        self.list.deinit(alloc);
+    }
+
+    pub fn add(
+        self: *ContextList,
+        alloc: std.mem.Allocator,
+        ctx: Context,
+    ) !void {
+        try self.list.append(alloc, ctx);
+        self.total_complexity += ctx.complexity;
+    }
+};
+
 pub fn main(init: std.process.Init) !void {
-    var context_list: std.ArrayList(Context) = .empty;
+    var context_list: ContextList = .{};
     defer context_list.deinit(init.gpa);
 
     var arg_iterator = init.minimal.args.iterate();
@@ -25,14 +45,20 @@ pub fn main(init: std.process.Init) !void {
             std.log.info("ERROR: missing required paramters: `sentinel add <name> <complexity>`", .{});
             return;
         }
+        const complexity = try std.fmt.parseInt(u8, complexity_str.?, 10);
 
-        try context_list.append(init.gpa, .{
+        if (context_list.total_complexity + complexity > MAX_BIOLOGICAL_RAM) {
+            std.log.info("You're overloaded!", .{});
+            return;
+        }
+
+        try context_list.add(init.gpa, .{
             .name = name.?,
-            .complexity = try std.fmt.parseInt(u8, complexity_str.?, 10),
+            .complexity = complexity,
         });
     }
 
-    for (context_list.items) |it| {
+    for (context_list.list.items) |it| {
         std.log.debug("Name: {s}", .{it.name});
         std.log.debug("Complexity: {d}", .{it.complexity});
     }
