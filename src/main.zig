@@ -100,25 +100,20 @@ fn score(idea_list: IdeaList) void {
 }
 
 pub fn main(init: std.process.Init) !void {
-    var exit = false;
     var idea_list: IdeaList = .{};
     defer idea_list.deinit(init.gpa);
 
-    while (!exit) {
-        var arg_iterator = init.minimal.args.iterate();
-        defer arg_iterator.deinit();
-        _ = arg_iterator.next(); // skip the app bin path
-        const command: ?[:0]const u8 = arg_iterator.next();
+    var arg_iterator = init.minimal.args.iterate();
+    defer arg_iterator.deinit();
+    _ = arg_iterator.next(); // skip the app bin path
+    const command: ?[:0]const u8 = arg_iterator.next();
 
-        // TODO: return error
-        if (command == null) return;
+    // TODO: return error
+    if (command == null) return;
 
-        if (std.mem.eql(u8, command.?, "add")) {
-            try add(init.gpa, &arg_iterator, &idea_list);
-        } else if (std.mem.eql(u8, command.?, "score")) {
-            score(idea_list);
-        } else if (std.mem.eql(u8, command.?, "exit")) {
-            exit = true;
-        }
+    if (std.mem.eql(u8, command.?, "add")) {
+        try add(init.gpa, &arg_iterator, &idea_list);
+    } else if (std.mem.eql(u8, command.?, "score")) {
+        score(idea_list);
     }
 }
